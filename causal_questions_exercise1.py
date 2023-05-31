@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import pyreadr
 from sklearn.linear_model import LogisticRegression
 from statsmodels.api import Logit
 
 # Load data
-vaccine_data = pd.read_csv('vaccine_data.csv')
+vaccine_data = pyreadr.read_r('vaccine_data.rds')[None]
 
 # Describe data
 print(vaccine_data.describe())
@@ -15,7 +16,7 @@ print(vaccine_data.describe())
 # ---------------------------------------------------------------------------- #
 # Fit propensity score model
 ps_1 = LogisticRegression()
-ps_1.fit(vaccine_data[['sex', 'age', 'age_sq', 'cvd', 'pulm', 'dm']], vaccine_data['vacc'])
+ps_1.fit(vaccine_data[['sex', 'age', 'cvd', 'pulm', 'dm']], vaccine_data['vacc'])
 
 # Create density plot (unweighted sample)
 plt.figure()
@@ -82,7 +83,7 @@ print('Standard Error:', se_1)
 # ---------------------------------------------------------------------------- #
 # Fit propensity score model
 ps_2 = LogisticRegression()
-ps_2.fit(vaccine_data[['sex', 'age', 'age_sq', 'cvd', 'pulm', 'dm', 'wt']], vaccine_data['vacc'])
+ps_2.fit(vaccine_data[['sex', 'age', 'cvd', 'pulm', 'dm', 'wt']], vaccine_data['vacc'])
 
 # Estimate weights
 vaccine_data['weight_2'] = np.where(vaccine_data['vacc'] == 1, 1 / ps_2.predict_proba(vaccine_data[['sex', 'age', 'age_sq', 'cvd', 'pulm', 'dm', 'wt']])[:, 1], 1 / (1 - ps_2.predict_proba(vaccine_data[['sex', 'age', 'age_sq', 'cvd', 'pulm', 'dm', 'wt']])[:, 1]))
